@@ -13,9 +13,11 @@ import { calculateMaxHp } from "@/lib/calculations";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useState } from "react";
 
 export default function CharacterSheet() {
   const { toast } = useToast();
+  const [globalSkillBase, setGlobalSkillBase] = useState(0);
   const form = useForm<InsertCharacter>({
     resolver: zodResolver(insertCharacterSchema),
     defaultValues: {
@@ -53,7 +55,20 @@ export default function CharacterSheet() {
 
   const { mutate: saveCharacter, isPending } = useMutation({
     mutationFn: async (data: InsertCharacter) => {
-      await apiRequest("POST", "/api/characters", data);
+      // Set all base values to the global skill base before saving
+      const updatedData = {
+        ...data,
+        strengthBase: globalSkillBase,
+        agilityBase: globalSkillBase,
+        enduranceBase: globalSkillBase,
+        intelligenceBase: globalSkillBase,
+        wisdomBase: globalSkillBase,
+        charismaBase: globalSkillBase,
+        willpowerBase: globalSkillBase,
+        intuitionBase: globalSkillBase,
+        presenceBase: globalSkillBase,
+      };
+      await apiRequest("POST", "/api/characters", updatedData);
     },
     onSuccess: () => {
       toast({
@@ -93,74 +108,45 @@ export default function CharacterSheet() {
               </div>
 
               <div className="grid grid-cols-3 gap-8">
-                <AttributeInput form={form} name="body" label="Body" />
+                <div className="space-y-4">
+                  <AttributeInput form={form} name="body" label="Body" />
+                  <div className="pt-4 space-y-4">
+                    <SkillInput
+                      form={form}
+                      name="strength"
+                      label="Strength"
+                      attributeValue={watchBody}
+                      globalSkillBase={globalSkillBase}
+                    />
+                    <SkillInput
+                      form={form}
+                      name="agility"
+                      label="Agility"
+                      attributeValue={watchBody}
+                      globalSkillBase={globalSkillBase}
+                    />
+                    <SkillInput
+                      form={form}
+                      name="endurance"
+                      label="Endurance"
+                      attributeValue={watchBody}
+                      globalSkillBase={globalSkillBase}
+                    />
+                  </div>
+                </div>
                 <AttributeInput form={form} name="mind" label="Mind" />
                 <AttributeInput form={form} name="soul" label="Soul" />
               </div>
 
-              <div className="space-y-6">
-                <div className="grid grid-cols-3 gap-4">
-                  <SkillInput
-                    form={form}
-                    name="strength"
-                    label="Strength"
-                    attributeValue={watchBody}
-                  />
-                  <SkillInput
-                    form={form}
-                    name="agility"
-                    label="Agility"
-                    attributeValue={watchBody}
-                  />
-                  <SkillInput
-                    form={form}
-                    name="endurance"
-                    label="Endurance"
-                    attributeValue={watchBody}
-                  />
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <SkillInput
-                    form={form}
-                    name="intelligence"
-                    label="Intelligence"
-                    attributeValue={form.watch("mind")}
-                  />
-                  <SkillInput
-                    form={form}
-                    name="wisdom"
-                    label="Wisdom"
-                    attributeValue={form.watch("mind")}
-                  />
-                  <SkillInput
-                    form={form}
-                    name="charisma"
-                    label="Charisma"
-                    attributeValue={form.watch("mind")}
-                  />
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <SkillInput
-                    form={form}
-                    name="willpower"
-                    label="Willpower"
-                    attributeValue={form.watch("soul")}
-                  />
-                  <SkillInput
-                    form={form}
-                    name="intuition"
-                    label="Intuition"
-                    attributeValue={form.watch("soul")}
-                  />
-                  <SkillInput
-                    form={form}
-                    name="presence"
-                    label="Presence"
-                    attributeValue={form.watch("soul")}
-                  />
-                </div>
+              <div className="space-y-4">
+                <Label>Global Skill Base Value</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={globalSkillBase}
+                  onChange={(e) => setGlobalSkillBase(Number(e.target.value))}
+                  className="w-32"
+                />
               </div>
 
               <div className="space-y-4">
