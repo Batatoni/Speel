@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertCharacterSchema, type InsertCharacter } from "@shared/schema";
+import { insertCharacterSchema, type InsertCharacter, calculateDamageReduction } from "@shared/schema";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -18,6 +18,8 @@ import { useState } from "react";
 export default function CharacterSheet() {
   const { toast } = useToast();
   const [globalSkillBase, setGlobalSkillBase] = useState(0);
+  const [incomingDamage, setIncomingDamage] = useState(0);
+
   const form = useForm<InsertCharacter>({
     resolver: zodResolver(insertCharacterSchema),
     defaultValues: {
@@ -44,6 +46,14 @@ export default function CharacterSheet() {
       intuitionBase: 0,
       presence: "none",
       presenceBase: 0,
+      // Equipment
+      armorName: "",
+      armorValue: 0,
+      shieldName: "",
+      shieldValue: 0,
+      weaponName: "",
+      weaponDamage: 0,
+      // HP
       currentHp: 50,
       maxHp: 50,
     },
@@ -55,7 +65,6 @@ export default function CharacterSheet() {
 
   const { mutate: saveCharacter, isPending } = useMutation({
     mutationFn: async (data: InsertCharacter) => {
-      // Set all base values to the global skill base before saving
       const updatedData = {
         ...data,
         strengthBase: globalSkillBase,
@@ -81,8 +90,22 @@ export default function CharacterSheet() {
   const watchBody = form.watch("body");
   const watchEndurance = form.watch("endurance");
   const maxHp = calculateMaxHp(watchBody, watchEndurance);
-
   form.setValue("maxHp", maxHp);
+
+  const handleDamageCalculation = () => {
+    const armorValue = form.watch("armorValue");
+    const shieldValue = form.watch("shieldValue");
+    const enduranceBonus = Math.floor((watchBody - 10) / 2) + (globalSkillBase * (form.watch("endurance") === "master" ? 2 : (form.watch("endurance") === "expert" ? 1.5 : 1)));
+
+    const totalDamage = calculateDamageReduction(
+      incomingDamage,
+      armorValue + shieldValue,
+      enduranceBonus
+    );
+
+    const newHp = Math.max(0, form.watch("currentHp") - Math.floor(totalDamage));
+    form.setValue("currentHp", newHp);
+  };
 
   return (
     <div className="min-h-screen bg-background p-8">
@@ -94,50 +117,46 @@ export default function CharacterSheet() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit((data) => saveCharacter(data))}
-              className="space-y-8"
-            >
+            <form onSubmit={form.handleSubmit((data) => saveCharacter(data))} className="space-y-8">
               <div className="space-y-4">
                 <Label htmlFor="name">Character Name</Label>
-                <Input
-                  id="name"
-                  {...form.register("name")}
-                  className="text-xl"
-                />
+                <Input id="name" {...form.register("name")} className="text-xl" />
               </div>
 
+              {/* Attributes and Skills */}
               <div className="grid grid-cols-3 gap-8">
+                {/* Body Section */}
                 <div className="space-y-4">
                   <AttributeInput form={form} name="body" label="Body" />
                   <div className="pt-4 space-y-4">
-                    <SkillInput
-                      form={form}
-                      name="strength"
-                      label="Strength"
-                      attributeValue={watchBody}
-                      globalSkillBase={globalSkillBase}
-                    />
-                    <SkillInput
-                      form={form}
-                      name="agility"
-                      label="Agility"
-                      attributeValue={watchBody}
-                      globalSkillBase={globalSkillBase}
-                    />
-                    <SkillInput
-                      form={form}
-                      name="endurance"
-                      label="Endurance"
-                      attributeValue={watchBody}
-                      globalSkillBase={globalSkillBase}
-                    />
+                    <SkillInput form={form} name="strength" label="Strength" attributeValue={watchBody} globalSkillBase={globalSkillBase} />
+                    <SkillInput form={form} name="agility" label="Agility" attributeValue={watchBody} globalSkillBase={globalSkillBase} />
+                    <SkillInput form={form} name="endurance" label="Endurance" attributeValue={watchBody} globalSkillBase={globalSkillBase} />
                   </div>
                 </div>
-                <AttributeInput form={form} name="mind" label="Mind" />
-                <AttributeInput form={form} name="soul" label="Soul" />
+
+                {/* Mind Section */}
+                <div className="space-y-4">
+                  <AttributeInput form={form} name="mind" label="Mind" />
+                  <div className="pt-4 space-y-4">
+                    <SkillInput form={form} name="intelligence" label="Intelligence" attributeValue={form.watch("mind")} globalSkillBase={globalSkillBase} />
+                    <SkillInput form={form} name="wisdom" label="Wisdom" attributeValue={form.watch("mind")} globalSkillBase={globalSkillBase} />
+                    <SkillInput form={form} name="charisma" label="Charisma" attributeValue={form.watch("mind")} globalSkillBase={globalSkillBase} />
+                  </div>
+                </div>
+
+                {/* Soul Section */}
+                <div className="space-y-4">
+                  <AttributeInput form={form} name="soul" label="Soul" />
+                  <div className="pt-4 space-y-4">
+                    <SkillInput form={form} name="willpower" label="Willpower" attributeValue={form.watch("soul")} globalSkillBase={globalSkillBase} />
+                    <SkillInput form={form} name="intuition" label="Intuition" attributeValue={form.watch("soul")} globalSkillBase={globalSkillBase} />
+                    <SkillInput form={form} name="presence" label="Presence" attributeValue={form.watch("soul")} globalSkillBase={globalSkillBase} />
+                  </div>
+                </div>
               </div>
 
+              {/* Global Skill Base */}
               <div className="space-y-4">
                 <Label>Global Skill Base Value</Label>
                 <Input
@@ -149,18 +168,60 @@ export default function CharacterSheet() {
                 />
               </div>
 
-              <div className="space-y-4">
-                <Label>HP ({form.watch("currentHp")}/{maxHp})</Label>
-                <Progress
-                  value={(form.watch("currentHp") / maxHp) * 100}
-                  className="h-4"
-                />
-                <Input
-                  type="number"
-                  {...form.register("currentHp", { valueAsNumber: true })}
-                  min={0}
-                  max={maxHp}
-                />
+              {/* Equipment Section */}
+              <div className="space-y-6">
+                <h3 className="text-lg font-semibold">Equipment</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  {/* Armor */}
+                  <div className="space-y-2">
+                    <Label>Armor</Label>
+                    <Input {...form.register("armorName")} placeholder="Armor Name" />
+                    <Input type="number" {...form.register("armorValue", { valueAsNumber: true })} placeholder="Armor Value" />
+                  </div>
+                  {/* Shield */}
+                  <div className="space-y-2">
+                    <Label>Shield</Label>
+                    <Input {...form.register("shieldName")} placeholder="Shield Name" />
+                    <Input type="number" {...form.register("shieldValue", { valueAsNumber: true })} placeholder="Shield Value" />
+                  </div>
+                  {/* Weapon */}
+                  <div className="space-y-2">
+                    <Label>Weapon</Label>
+                    <Input {...form.register("weaponName")} placeholder="Weapon Name" />
+                    <Input type="number" {...form.register("weaponDamage", { valueAsNumber: true })} placeholder="Weapon Damage" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Health and Damage Section */}
+              <div className="space-y-6">
+                <div className="space-y-4">
+                  <Label>HP ({form.watch("currentHp")}/{maxHp})</Label>
+                  <Progress value={(form.watch("currentHp") / maxHp) * 100} className="h-4" />
+                  <Input
+                    type="number"
+                    {...form.register("currentHp", { valueAsNumber: true })}
+                    min={0}
+                    max={maxHp}
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  <Label>Damage Calculator</Label>
+                  <div className="flex gap-4">
+                    <Input
+                      type="number"
+                      min={0}
+                      value={incomingDamage}
+                      onChange={(e) => setIncomingDamage(Number(e.target.value))}
+                      placeholder="Incoming Damage"
+                      className="w-32"
+                    />
+                    <Button type="button" onClick={handleDamageCalculation}>
+                      Calculate Damage
+                    </Button>
+                  </div>
+                </div>
               </div>
 
               <Button type="submit" disabled={isPending} className="w-full">
@@ -172,4 +233,15 @@ export default function CharacterSheet() {
       </Card>
     </div>
   );
+}
+
+function getProficiencyMultiplier(proficiency: string): number {
+  switch (proficiency) {
+    case "master":
+      return 2;
+    case "expert":
+      return 1.5;
+    default:
+      return 1;
+  }
 }

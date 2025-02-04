@@ -32,6 +32,13 @@ export const characters = pgTable("characters", {
   intuitionBase: integer("intuitionBase").notNull(),
   presence: text("presence").notNull().$type<ProficiencyLevel>(),
   presenceBase: integer("presenceBase").notNull(),
+  // Equipment
+  armorName: text("armorName").notNull(),
+  armorValue: integer("armorValue").notNull(),
+  shieldName: text("shieldName").notNull(),
+  shieldValue: integer("shieldValue").notNull(),
+  weaponName: text("weaponName").notNull(),
+  weaponDamage: integer("weaponDamage").notNull(),
   // HP
   currentHp: integer("currentHp").notNull(),
   maxHp: integer("maxHp").notNull(),
@@ -44,7 +51,7 @@ export const insertCharacterSchema = createInsertSchema(characters).omit({
 export type InsertCharacter = z.infer<typeof insertCharacterSchema>;
 export type Character = typeof characters.$inferSelect;
 
-// Helper function to get multiplier from proficiency level
+// Helper functions
 export function getProficiencyMultiplier(level: ProficiencyLevel): number {
   switch (level) {
     case "none": return 1;
@@ -52,4 +59,16 @@ export function getProficiencyMultiplier(level: ProficiencyLevel): number {
     case "mastered": return 3;
     case "supreme": return 4;
   }
+}
+
+export function calculateDamageReduction(incomingDamage: number, armorValue: number, enduranceBonus: number): number {
+  const totalArmor = armorValue + Math.floor(enduranceBonus / 2);
+
+  // If armor is >= 50% of damage, use the complex formula
+  if (totalArmor >= incomingDamage / 2) {
+    return incomingDamage * (1 / (totalArmor * 4));
+  }
+
+  // Otherwise use basic reduction
+  return Math.max(0, incomingDamage - totalArmor);
 }
