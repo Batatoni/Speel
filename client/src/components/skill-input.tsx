@@ -1,7 +1,7 @@
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UseFormReturn } from "react-hook-form";
-import { InsertCharacter } from "@shared/schema";
+import { InsertCharacter, ProficiencyLevel } from "@shared/schema";
 import { calculateSkillBonus } from "@/lib/calculations";
 
 interface SkillInputProps {
@@ -17,20 +17,31 @@ export function SkillInput({
   label,
   attributeValue,
 }: SkillInputProps) {
-  const bonus = calculateSkillBonus(attributeValue);
+  const baseBonus = 2; // Fixed skill value
+  const proficiencyLevel = form.watch(name) as ProficiencyLevel;
+  const multiplier = Number(proficiencyLevel.slice(1));
+  const attributeBonus = Math.floor((attributeValue - 10) / 2);
+  const totalBonus = attributeBonus + (baseBonus * multiplier);
 
   return (
     <div className="space-y-1">
       <Label htmlFor={name} className="text-sm">
-        {label} (+{bonus})
+        {label} (+{totalBonus})
       </Label>
-      <Input
-        type="number"
-        id={name}
-        min={1}
-        max={20}
-        {...form.register(name, { valueAsNumber: true })}
-      />
+      <Select
+        value={proficiencyLevel}
+        onValueChange={(value: ProficiencyLevel) => form.setValue(name as any, value)}
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Select proficiency" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="x1">×1 Multiplier</SelectItem>
+          <SelectItem value="x2">×2 Multiplier</SelectItem>
+          <SelectItem value="x3">×3 Multiplier</SelectItem>
+          <SelectItem value="x4">×4 Multiplier</SelectItem>
+        </SelectContent>
+      </Select>
     </div>
   );
 }
