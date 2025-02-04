@@ -3,7 +3,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Define proficiency levels as a string literal type since we're using in-memory storage
-export type ProficiencyLevel = "x1" | "x2" | "x3" | "x4";
+export type ProficiencyLevel = "none" | "trained" | "mastered" | "supreme";
 
 export const characters = pgTable("characters", {
   id: serial("id").primaryKey(),
@@ -37,5 +37,10 @@ export type Character = typeof characters.$inferSelect;
 
 // Helper function to get multiplier from proficiency level
 export function getProficiencyMultiplier(level: ProficiencyLevel): number {
-  return Number(level.slice(1));
+  switch (level) {
+    case "none": return 1;
+    case "trained": return 2;
+    case "mastered": return 3;
+    case "supreme": return 4;
+  }
 }
