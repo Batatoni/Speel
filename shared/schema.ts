@@ -13,16 +13,25 @@ export const characters = pgTable("characters", {
   soul: integer("soul").notNull(),
   // Body Skills
   strength: text("strength").notNull().$type<ProficiencyLevel>(),
+  strengthBase: integer("strengthBase").notNull(),
   agility: text("agility").notNull().$type<ProficiencyLevel>(),
+  agilityBase: integer("agilityBase").notNull(),
   endurance: text("endurance").notNull().$type<ProficiencyLevel>(),
+  enduranceBase: integer("enduranceBase").notNull(),
   // Mind Skills
   intelligence: text("intelligence").notNull().$type<ProficiencyLevel>(),
+  intelligenceBase: integer("intelligenceBase").notNull(),
   wisdom: text("wisdom").notNull().$type<ProficiencyLevel>(),
+  wisdomBase: integer("wisdomBase").notNull(),
   charisma: text("charisma").notNull().$type<ProficiencyLevel>(),
+  charismaBase: integer("charismaBase").notNull(),
   // Soul Skills
   willpower: text("willpower").notNull().$type<ProficiencyLevel>(),
+  willpowerBase: integer("willpowerBase").notNull(),
   intuition: text("intuition").notNull().$type<ProficiencyLevel>(),
+  intuitionBase: integer("intuitionBase").notNull(),
   presence: text("presence").notNull().$type<ProficiencyLevel>(),
+  presenceBase: integer("presenceBase").notNull(),
   // HP
   currentHp: integer("currentHp").notNull(),
   maxHp: integer("maxHp").notNull(),
