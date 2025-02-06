@@ -26,7 +26,7 @@ export function SkillInput({
   return (
     <div className="space-y-1">
       <Label htmlFor={name} className="text-sm">
-        {label} (+{totalBonus})
+        {label} ({totalBonus>=0? '+'+totalBonus : totalBonus})
       </Label>
       <Select
         value={proficiencyLevel}

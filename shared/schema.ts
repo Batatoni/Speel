@@ -8,6 +8,7 @@ export type ProficiencyLevel = "none" | "trained" | "mastered" | "supreme";
 export const characters = pgTable("characters", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
+  rank: text("rank").notNull(),
   body: integer("body").notNull(),
   mind: integer("mind").notNull(),
   soul: integer("soul").notNull(),

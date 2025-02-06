@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function CharacterSheet() {
   const { toast } = useToast();
@@ -23,6 +24,7 @@ export default function CharacterSheet() {
     resolver: zodResolver(insertCharacterSchema),
     defaultValues: {
       name: "",
+      rank: "Sleeper",
       body: 10,
       mind: 10,
       soul: 10,
@@ -131,9 +133,32 @@ export default function CharacterSheet() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit((data) => saveCharacter(data))} className="space-y-8">
-              <div className="space-y-4">
-                <Label htmlFor="name">Character Name</Label>
-                <Input id="name" {...form.register("name")} className="text-xl" />
+              <div className="grid grid-cols-3 gap-6">
+                <div className="space-y-4">
+                  <Label htmlFor="name">Character Name</Label>
+                  <Input id="name" {...form.register("name")} className="text-xl"/>
+                </div>
+                <div className="space-y-4">
+                  <Label>Character Rank</Label>
+                  <Select value="Sleeper" onValueChange={(value: string) => form.setValue("rank", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Rank" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Sleeper">Sleeper</SelectItem>
+                    <SelectItem value="Awakened">Awakened</SelectItem>
+                    <SelectItem value="Ascendant">Ascendant</SelectItem>
+                    <SelectItem value="Transcendent">Transcendent</SelectItem>
+                    <SelectItem value="Sovereign">Sovereign</SelectItem>
+                    <SelectItem value="Sacred">Sacred</SelectItem>
+                    <SelectItem value="Divine">Divine</SelectItem>
+                  </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-4">
+                  <Label>Character Dice</Label>
+                  <Input id="name" className="text-xl" value="1d4" readOnly/>
+                </div>
               </div>
 
               {/* Attributes and Skills */}
