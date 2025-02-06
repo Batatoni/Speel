@@ -1,5 +1,5 @@
-export function calculateMaxHp(body: number, endurance: number): number {
-  return body * 5 + endurance * 2;
+export function calculateMaxHp(body: number): number {
+  return body * 5 + 8;
 }
 
 export function calculateSkillBonus(attributeValue: number): number {

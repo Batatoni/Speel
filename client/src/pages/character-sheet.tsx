@@ -88,14 +88,29 @@ export default function CharacterSheet() {
   });
 
   const watchBody = form.watch("body");
-  const watchEndurance = form.watch("endurance");
-  const maxHp = calculateMaxHp(watchBody, watchEndurance);
+  const maxHp = calculateMaxHp(watchBody);
   form.setValue("maxHp", maxHp);
 
   const handleDamageCalculation = () => {
     const armorValue = form.watch("armorValue");
     const shieldValue = form.watch("shieldValue");
-    const enduranceBonus = Math.floor((watchBody - 10) / 2) + (globalSkillBase * (form.watch("endurance") === "master" ? 2 : (form.watch("endurance") === "expert" ? 1.5 : 1)));
+    
+    const getEnduranceMultiplier = (proficiency: string) => {
+      switch (proficiency) {
+        case "none":
+          return 1;
+        case "trained":
+          return 2;
+        case "mastered":
+          return 3;
+        case "supreme":
+          return 4;
+        default:
+          return 0;
+      }
+    };
+
+    const enduranceBonus = Math.floor((watchBody - 10) / 2) + (globalSkillBase * getEnduranceMultiplier(form.watch("endurance")));
 
     const totalDamage = calculateDamageReduction(
       incomingDamage,
