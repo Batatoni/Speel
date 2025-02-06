@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AttributeInput } from "@/components/attribute-input";
 import { SkillInput } from "@/components/skill-input";
-import { calculateMaxHp } from "@/lib/calculations";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -88,8 +87,7 @@ export default function CharacterSheet() {
   });
 
   const watchBody = form.watch("body");
-  const maxHp = calculateMaxHp(watchBody);
-  form.setValue("maxHp", maxHp);
+  const maxHp = 50;
 
   const handleDamageCalculation = () => {
     const armorValue = form.watch("armorValue");
@@ -208,36 +206,47 @@ export default function CharacterSheet() {
                 </div>
               </div>
 
-              {/* Health and Damage Section */}
+              {/* Health and Damage Section */} 
               <div className="space-y-6">
                 <div className="space-y-4">
-                  <Label>HP ({form.watch("currentHp")}/{maxHp})</Label>
-                  <Progress value={(form.watch("currentHp") / maxHp) * 100} className="h-4" />
-                  <Input
+                  <Label>HP ({form.watch("currentHp")}/{form.watch("maxHp")})</Label>
+                  <Progress value={(form.watch("currentHp")/form.watch("maxHp")) * 100} className="h-4" />
+                  
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                <div className="space-y-4">
+                  <Label>MaxHP</Label>
+                    <Input
+                      type="number"
+                      {...form.register("maxHp", { valueAsNumber: true })}
+                      min={0}                   
+                    />
+                </div> 
+                <div className="space-y-4">
+                <Label>CurrentHP</Label>
+                <Input
                     type="number"
                     {...form.register("currentHp", { valueAsNumber: true })}
                     min={0}
-                    max={maxHp}
-                  />
-                </div>
-
-                <div className="space-y-4">
+                    max={51}
+                  />  
+                </div>                 
+                 <div className="space-y-4">
                   <Label>Damage Calculator</Label>
-                  <div className="flex gap-4">
+                  
                     <Input
                       type="number"
                       min={0}
                       value={incomingDamage}
                       onChange={(e) => setIncomingDamage(Number(e.target.value))}
                       placeholder="Incoming Damage"
-                      className="w-32"
                     />
                     <Button type="button" onClick={handleDamageCalculation}>
                       Calculate Damage
                     </Button>
                   </div>
                 </div>
-              </div>
+                </div>
 
               <Button type="submit" disabled={isPending} className="w-full">
                 Save Character
