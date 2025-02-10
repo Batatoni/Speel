@@ -12,6 +12,7 @@ export const characters = pgTable("characters", {
   body: integer("body").notNull(),
   mind: integer("mind").notNull(),
   soul: integer("soul").notNull(),
+  dicevalue: text("dicevalue").notNull(),
   // Body Skills
   strength: text("strength").notNull().$type<ProficiencyLevel>(),
   strengthBase: integer("strengthBase").notNull(),
@@ -67,7 +68,7 @@ export function calculateDamageReduction(incomingDamage: number, armorValue: num
 
   // If armor is >= 50% of damage, use the complex formula
   if (totalArmor >= incomingDamage / 2) {
-    return incomingDamage * (1 / (totalArmor * 4));
+    return incomingDamage * (incomingDamage / (totalArmor * 3));
   }
 
   // Otherwise use basic reduction

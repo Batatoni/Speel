@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertCharacterSchema, type InsertCharacter, calculateDamageReduction } from "@shared/schema";
+import { insertCharacterSchema, type InsertCharacter, calculateDamageReduction,} from "@shared/schema";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -13,7 +13,14 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SetDiceValue } from "@/lib/calculations";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function CharacterSheet() {
   const { toast } = useToast();
@@ -47,6 +54,7 @@ export default function CharacterSheet() {
       intuitionBase: 0,
       presence: "none",
       presenceBase: 0,
+      dicevalue: "1d4",
       // Equipment
       armorName: "",
       armorValue: 0,
@@ -94,7 +102,7 @@ export default function CharacterSheet() {
   const handleDamageCalculation = () => {
     const armorValue = form.watch("armorValue");
     const shieldValue = form.watch("shieldValue");
-    
+
     const getEnduranceMultiplier = (proficiency: string) => {
       switch (proficiency) {
         case "none":
@@ -110,7 +118,9 @@ export default function CharacterSheet() {
       }
     };
 
-    const enduranceBonus = Math.floor((watchBody - 10) / 2) + (globalSkillBase * getEnduranceMultiplier(form.watch("endurance")));
+    const enduranceBonus =
+      Math.floor((watchBody - 10) / 2) +
+      globalSkillBase * getEnduranceMultiplier(form.watch("endurance"));
 
     const totalDamage = calculateDamageReduction(
       incomingDamage,
@@ -118,7 +128,10 @@ export default function CharacterSheet() {
       enduranceBonus
     );
 
-    const newHp = Math.max(0, form.watch("currentHp") - Math.floor(totalDamage));
+    const newHp = Math.max(
+      0,
+      form.watch("currentHp") - Math.floor(totalDamage)
+    );
     form.setValue("currentHp", newHp);
   };
 
@@ -132,32 +145,42 @@ export default function CharacterSheet() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit((data) => saveCharacter(data))} className="space-y-8">
+            <form
+              onSubmit={form.handleSubmit((data) => saveCharacter(data))}
+              className="space-y-8"
+            >
               <div className="grid grid-cols-3 gap-6">
                 <div className="space-y-4">
                   <Label htmlFor="name">Character Name</Label>
-                  <Input id="name" {...form.register("name")} className="text-xl"/>
+                  <Input
+                    id="name"
+                    {...form.register("name")}
+                    className="text-xl"
+                  />
                 </div>
                 <div className="space-y-4">
                   <Label>Character Rank</Label>
-                  <Select value="Sleeper" onValueChange={(value: string) => form.setValue("rank", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Rank" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Sleeper">Sleeper</SelectItem>
-                    <SelectItem value="Awakened">Awakened</SelectItem>
-                    <SelectItem value="Ascendant">Ascendant</SelectItem>
-                    <SelectItem value="Transcendent">Transcendent</SelectItem>
-                    <SelectItem value="Sovereign">Sovereign</SelectItem>
-                    <SelectItem value="Sacred">Sacred</SelectItem>
-                    <SelectItem value="Divine">Divine</SelectItem>
-                  </SelectContent>
+                  <Select
+                    onValueChange={(value: string) =>
+                     form.setValue("dicevalue", SetDiceValue(value)) }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Rank" />
+                    </SelectTrigger>
+                    <SelectContent >
+                      <SelectItem value="Sleeper">Sleeper</SelectItem>
+                      <SelectItem value="Awakened">Awakened</SelectItem>
+                      <SelectItem value="Ascendant">Ascendant</SelectItem>
+                      <SelectItem value="Transcendent">Transcendent</SelectItem>
+                      <SelectItem value="Sovereign">Sovereign</SelectItem>
+                      <SelectItem value="Sacred">Sacred</SelectItem>
+                      <SelectItem value="Divine">Divine</SelectItem>
+                    </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-4">
                   <Label>Character Dice</Label>
-                  <Input id="name" className="text-xl" value="1d4" readOnly/>
+                  <Input id="name" className="text-xl" {...form.register("dicevalue")} readOnly />
                 </div>
               </div>
 
@@ -167,9 +190,27 @@ export default function CharacterSheet() {
                 <div className="space-y-4">
                   <AttributeInput form={form} name="body" label="Body" />
                   <div className="pt-4 space-y-4">
-                    <SkillInput form={form} name="strength" label="Strength" attributeValue={watchBody} globalSkillBase={globalSkillBase} />
-                    <SkillInput form={form} name="agility" label="Agility" attributeValue={watchBody} globalSkillBase={globalSkillBase} />
-                    <SkillInput form={form} name="endurance" label="Endurance" attributeValue={watchBody} globalSkillBase={globalSkillBase} />
+                    <SkillInput
+                      form={form}
+                      name="strength"
+                      label="Strength"
+                      attributeValue={watchBody}
+                      globalSkillBase={globalSkillBase}
+                    />
+                    <SkillInput
+                      form={form}
+                      name="agility"
+                      label="Agility"
+                      attributeValue={watchBody}
+                      globalSkillBase={globalSkillBase}
+                    />
+                    <SkillInput
+                      form={form}
+                      name="endurance"
+                      label="Endurance"
+                      attributeValue={watchBody}
+                      globalSkillBase={globalSkillBase}
+                    />
                   </div>
                 </div>
 
@@ -177,9 +218,27 @@ export default function CharacterSheet() {
                 <div className="space-y-4">
                   <AttributeInput form={form} name="mind" label="Mind" />
                   <div className="pt-4 space-y-4">
-                    <SkillInput form={form} name="intelligence" label="Intelligence" attributeValue={form.watch("mind")} globalSkillBase={globalSkillBase} />
-                    <SkillInput form={form} name="wisdom" label="Wisdom" attributeValue={form.watch("mind")} globalSkillBase={globalSkillBase} />
-                    <SkillInput form={form} name="charisma" label="Charisma" attributeValue={form.watch("mind")} globalSkillBase={globalSkillBase} />
+                    <SkillInput
+                      form={form}
+                      name="intelligence"
+                      label="Intelligence"
+                      attributeValue={form.watch("mind")}
+                      globalSkillBase={globalSkillBase}
+                    />
+                    <SkillInput
+                      form={form}
+                      name="wisdom"
+                      label="Wisdom"
+                      attributeValue={form.watch("mind")}
+                      globalSkillBase={globalSkillBase}
+                    />
+                    <SkillInput
+                      form={form}
+                      name="charisma"
+                      label="Charisma"
+                      attributeValue={form.watch("mind")}
+                      globalSkillBase={globalSkillBase}
+                    />
                   </div>
                 </div>
 
@@ -187,9 +246,27 @@ export default function CharacterSheet() {
                 <div className="space-y-4">
                   <AttributeInput form={form} name="soul" label="Soul" />
                   <div className="pt-4 space-y-4">
-                    <SkillInput form={form} name="willpower" label="Willpower" attributeValue={form.watch("soul")} globalSkillBase={globalSkillBase} />
-                    <SkillInput form={form} name="intuition" label="Intuition" attributeValue={form.watch("soul")} globalSkillBase={globalSkillBase} />
-                    <SkillInput form={form} name="presence" label="Presence" attributeValue={form.watch("soul")} globalSkillBase={globalSkillBase} />
+                    <SkillInput
+                      form={form}
+                      name="willpower"
+                      label="Willpower"
+                      attributeValue={form.watch("soul")}
+                      globalSkillBase={globalSkillBase}
+                    />
+                    <SkillInput
+                      form={form}
+                      name="intuition"
+                      label="Intuition"
+                      attributeValue={form.watch("soul")}
+                      globalSkillBase={globalSkillBase}
+                    />
+                    <SkillInput
+                      form={form}
+                      name="presence"
+                      label="Presence"
+                      attributeValue={form.watch("soul")}
+                      globalSkillBase={globalSkillBase}
+                    />
                   </div>
                 </div>
               </div>
@@ -213,57 +290,88 @@ export default function CharacterSheet() {
                   {/* Armor */}
                   <div className="space-y-2">
                     <Label>Armor</Label>
-                    <Input {...form.register("armorName")} placeholder="Armor Name" />
-                    <Input type="number" {...form.register("armorValue", { valueAsNumber: true })} placeholder="Armor Value" />
+                    <Input
+                      {...form.register("armorName")}
+                      placeholder="Armor Name"
+                    />
+                    <Input
+                      type="number"
+                      {...form.register("armorValue", { valueAsNumber: true })}
+                      placeholder="Armor Value"
+                    />
                   </div>
                   {/* Shield */}
                   <div className="space-y-2">
                     <Label>Shield</Label>
-                    <Input {...form.register("shieldName")} placeholder="Shield Name" />
-                    <Input type="number" {...form.register("shieldValue", { valueAsNumber: true })} placeholder="Shield Value" />
+                    <Input
+                      {...form.register("shieldName")}
+                      placeholder="Shield Name"
+                    />
+                    <Input
+                      type="number"
+                      {...form.register("shieldValue", { valueAsNumber: true })}
+                      placeholder="Shield Value"
+                    />
                   </div>
                   {/* Weapon */}
                   <div className="space-y-2">
                     <Label>Weapon</Label>
-                    <Input {...form.register("weaponName")} placeholder="Weapon Name" />
-                    <Input type="number" {...form.register("weaponDamage", { valueAsNumber: true })} placeholder="Weapon Damage" />
+                    <Input
+                      {...form.register("weaponName")}
+                      placeholder="Weapon Name"
+                    />
+                    <Input
+                      type="number"
+                      {...form.register("weaponDamage", {
+                        valueAsNumber: true,
+                      })}
+                      placeholder="Weapon Damage"
+                    />
                   </div>
                 </div>
               </div>
 
-              {/* Health and Damage Section */} 
+              {/* Health and Damage Section */}
               <div className="space-y-6">
                 <div className="space-y-4">
-                  <Label>HP ({form.watch("currentHp")}/{form.watch("maxHp")})</Label>
-                  <Progress value={(form.watch("currentHp")/form.watch("maxHp")) * 100} className="h-4" />
-                  
+                  <Label>
+                    HP ({form.watch("currentHp")}/{form.watch("maxHp")})
+                  </Label>
+                  <Progress
+                    value={
+                      (form.watch("currentHp") / form.watch("maxHp")) * 100
+                    }
+                    className="h-4"
+                  />
                 </div>
                 <div className="grid grid-cols-3 gap-2">
-                <div className="space-y-4">
-                  <Label>MaxHP</Label>
+                  <div className="space-y-4">
+                    <Label>MaxHP</Label>
                     <Input
                       type="number"
                       {...form.register("maxHp", { valueAsNumber: true })}
-                      min={0}                   
+                      min={0}
                     />
-                </div> 
-                <div className="space-y-4">
-                <Label>CurrentHP</Label>
-                <Input
-                    type="number"
-                    {...form.register("currentHp", { valueAsNumber: true })}
-                    min={0}
-                    max={51}
-                  />  
-                </div>                 
-                 <div className="space-y-4">
-                  <Label>Damage Calculator</Label>
-                  
+                  </div>
+                  <div className="space-y-4">
+                    <Label>CurrentHP</Label>
+                    <Input
+                      type="number"
+                      {...form.register("currentHp", { valueAsNumber: true })}
+                      min={0}
+                      max={51}
+                    />
+                  </div>
+                  <div className="space-y-4">
+                    <Label>Damage Calculator</Label>
+
                     <Input
                       type="number"
                       min={0}
                       value={incomingDamage}
-                      onChange={(e) => setIncomingDamage(Number(e.target.value))}
+                      onChange={(e) =>
+                        setIncomingDamage(Number(e.target.value))
+                      }
                       placeholder="Incoming Damage"
                     />
                     <Button type="button" onClick={handleDamageCalculation}>
@@ -271,7 +379,7 @@ export default function CharacterSheet() {
                     </Button>
                   </div>
                 </div>
-                </div>
+              </div>
 
               <Button type="submit" disabled={isPending} className="w-full">
                 Save Character
