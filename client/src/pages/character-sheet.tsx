@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { boolean } from "drizzle-orm/pg-core";
+import Input_ from "postcss/lib/input";
 
 export default function CharacterSheet() {
   const { toast } = useToast();
@@ -44,22 +45,31 @@ export default function CharacterSheet() {
       // Initialize all skills with 'none' level
       strength: "none",
       strengthBase: 0,
+      strengthBonus: 0,
       agility: "none",
       agilityBase: 0,
+      agilityBonus: 0,
       endurance: "none",
       enduranceBase: 0,
+      enduranceBonus: 0,
       intelligence: "none",
       intelligenceBase: 0,
+      intelligenceBonus: 0,
       wisdom: "none",
       wisdomBase: 0,
+      wisdomBonus: 0,
       charisma: "none",
       charismaBase: 0,
+      charismaBonus: 0,
       willpower: "none",
       willpowerBase: 0,
+      willpowerBonus: 0,
       intuition: "none",
       intuitionBase: 0,
+      intuitionBonus: 0,
       presence: "none",
       presenceBase: 0,
+      presenceBonus: 0,
       dicevalue: "1d4",
       // Equipment
       armorName: "",
@@ -130,7 +140,7 @@ export default function CharacterSheet() {
     const enduranceBonus =
       Math.floor((watchBody - 10) / 2) +
       globalSkillBase * getEnduranceMultiplier(form.watch("endurance"));
-
+    
     const totalDamage = calculateDamageReduction(
       incomingDamage,
       shieldonoff ? armorValue + shieldValue : armorValue,
@@ -138,8 +148,7 @@ export default function CharacterSheet() {
     );
 
     const newHp = Math.max(
-      0,
-      form.watch("currentHp") - Math.floor(totalDamage)
+      form.watch("currentHp") - Math.ceil(totalDamage)
     );
     form.setValue("currentHp", newHp);
   };
@@ -208,6 +217,7 @@ export default function CharacterSheet() {
                     <SkillInput
                       form={form}
                       name="strength"
+                      bonus="strengthBonus"
                       label="Strength"
                       attributeValue={watchBody}
                       globalSkillBase={globalSkillBase}
@@ -215,6 +225,7 @@ export default function CharacterSheet() {
                     <SkillInput
                       form={form}
                       name="agility"
+                      bonus="agilityBonus"
                       label="Agility"
                       attributeValue={watchBody}
                       globalSkillBase={globalSkillBase}
@@ -222,6 +233,7 @@ export default function CharacterSheet() {
                     <SkillInput
                       form={form}
                       name="endurance"
+                      bonus="enduranceBonus"
                       label="Endurance"
                       attributeValue={watchBody}
                       globalSkillBase={globalSkillBase}
@@ -236,6 +248,7 @@ export default function CharacterSheet() {
                     <SkillInput
                       form={form}
                       name="intelligence"
+                      bonus="intelligenceBonus"
                       label="Intelligence"
                       attributeValue={form.watch("mind")}
                       globalSkillBase={globalSkillBase}
@@ -243,6 +256,7 @@ export default function CharacterSheet() {
                     <SkillInput
                       form={form}
                       name="wisdom"
+                      bonus="wisdomBonus"
                       label="Wisdom"
                       attributeValue={form.watch("mind")}
                       globalSkillBase={globalSkillBase}
@@ -250,6 +264,7 @@ export default function CharacterSheet() {
                     <SkillInput
                       form={form}
                       name="charisma"
+                      bonus="charismaBonus"
                       label="Charisma"
                       attributeValue={form.watch("mind")}
                       globalSkillBase={globalSkillBase}
@@ -264,6 +279,7 @@ export default function CharacterSheet() {
                     <SkillInput
                       form={form}
                       name="willpower"
+                      bonus="willpowerBonus"
                       label="Willpower"
                       attributeValue={form.watch("soul")}
                       globalSkillBase={globalSkillBase}
@@ -271,6 +287,7 @@ export default function CharacterSheet() {
                     <SkillInput
                       form={form}
                       name="intuition"
+                      bonus="intuitionBonus"
                       label="Intuition"
                       attributeValue={form.watch("soul")}
                       globalSkillBase={globalSkillBase}
@@ -278,6 +295,7 @@ export default function CharacterSheet() {
                     <SkillInput
                       form={form}
                       name="presence"
+                      bonus="presenceBonus"
                       label="Presence"
                       attributeValue={form.watch("soul")}
                       globalSkillBase={globalSkillBase}
@@ -336,10 +354,8 @@ export default function CharacterSheet() {
                       placeholder="Weapon Name"
                     />
                     <Input
-                      type="number"
-                      {...form.register("weaponDamage", {
-                        valueAsNumber: true,
-                      })}
+                      type="text"
+                      
                       placeholder="Weapon Damage"
                     />
                   </div>
