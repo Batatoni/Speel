@@ -1,6 +1,10 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertCharacterSchema, type InsertCharacter, calculateDamageReduction,} from "@shared/schema";
+import {
+  insertCharacterSchema,
+  type InsertCharacter,
+  calculateDamageReduction,
+} from "@shared/schema";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -21,6 +25,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { boolean } from "drizzle-orm/pg-core";
 
 export default function CharacterSheet() {
   const { toast } = useToast();
@@ -60,6 +66,7 @@ export default function CharacterSheet() {
       armorValue: 0,
       shieldName: "",
       shieldValue: 0,
+      shieldonoff: false,
       weaponName: "",
       weaponDamage: 0,
       // HP
@@ -102,6 +109,8 @@ export default function CharacterSheet() {
   const handleDamageCalculation = () => {
     const armorValue = form.watch("armorValue");
     const shieldValue = form.watch("shieldValue");
+    const shieldonoff = form.watch("shieldonoff");
+    console.log(shieldonoff);
 
     const getEnduranceMultiplier = (proficiency: string) => {
       switch (proficiency) {
@@ -124,7 +133,7 @@ export default function CharacterSheet() {
 
     const totalDamage = calculateDamageReduction(
       incomingDamage,
-      armorValue + shieldValue,
+      shieldonoff ? armorValue + shieldValue : armorValue,
       enduranceBonus
     );
 
@@ -162,12 +171,13 @@ export default function CharacterSheet() {
                   <Label>Character Rank</Label>
                   <Select
                     onValueChange={(value: string) =>
-                     form.setValue("dicevalue", SetDiceValue(value)) }
+                      form.setValue("dicevalue", SetDiceValue(value))
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select Rank" />
                     </SelectTrigger>
-                    <SelectContent >
+                    <SelectContent>
                       <SelectItem value="Sleeper">Sleeper</SelectItem>
                       <SelectItem value="Awakened">Awakened</SelectItem>
                       <SelectItem value="Ascendant">Ascendant</SelectItem>
@@ -180,7 +190,12 @@ export default function CharacterSheet() {
                 </div>
                 <div className="space-y-4">
                   <Label>Character Dice</Label>
-                  <Input id="name" className="text-xl" {...form.register("dicevalue")} readOnly />
+                  <Input
+                    id="name"
+                    className="text-xl"
+                    {...form.register("dicevalue")}
+                    readOnly
+                  />
                 </div>
               </div>
 
@@ -359,7 +374,6 @@ export default function CharacterSheet() {
                       type="number"
                       {...form.register("currentHp", { valueAsNumber: true })}
                       min={0}
-                      max={51}
                     />
                   </div>
                   <div className="space-y-4">
@@ -377,6 +391,15 @@ export default function CharacterSheet() {
                     <Button type="button" onClick={handleDamageCalculation}>
                       Calculate Damage
                     </Button>
+                    <div className="space-x-1" >
+                    <Checkbox 
+                      checked={form.watch("shieldonoff")}
+                      onCheckedChange={(checked) =>
+                        form.setValue("shieldonoff", !!checked)
+                      }
+                    ></Checkbox>
+                    <Label >Shield On/Off</Label>
+                   </div>
                   </div>
                 </div>
               </div>

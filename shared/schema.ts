@@ -1,4 +1,5 @@
-import { pgTable, text, serial, integer } from "drizzle-orm/pg-core";
+import { int } from "drizzle-orm/mysql-core";
+import { pgTable, text, serial, integer, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -39,6 +40,7 @@ export const characters = pgTable("characters", {
   armorValue: integer("armorValue").notNull(),
   shieldName: text("shieldName").notNull(),
   shieldValue: integer("shieldValue").notNull(),
+  shieldonoff: boolean("shieldonoff").notNull(),
   weaponName: text("weaponName").notNull(),
   weaponDamage: integer("weaponDamage").notNull(),
   // HP
