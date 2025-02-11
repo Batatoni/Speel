@@ -31,7 +31,7 @@ import Input_ from "postcss/lib/input";
 
 export default function CharacterSheet() {
   const { toast } = useToast();
-  const [globalSkillBase, setGlobalSkillBase] = useState(0);
+  const [globalSkillBase, setGlobalSkillBase] = useState(1);
   const [incomingDamage, setIncomingDamage] = useState(0);
 
   const form = useForm<InsertCharacter>({
@@ -140,16 +140,14 @@ export default function CharacterSheet() {
     const enduranceBonus =
       Math.floor((watchBody - 10) / 2) +
       globalSkillBase * getEnduranceMultiplier(form.watch("endurance"));
-    
+
     const totalDamage = calculateDamageReduction(
       incomingDamage,
       shieldonoff ? armorValue + shieldValue : armorValue,
       enduranceBonus
     );
 
-    const newHp = Math.max(
-      form.watch("currentHp") - Math.ceil(totalDamage)
-    );
+    const newHp = Math.max(form.watch("currentHp") - Math.ceil(totalDamage));
     form.setValue("currentHp", newHp);
   };
 
@@ -167,15 +165,15 @@ export default function CharacterSheet() {
               onSubmit={form.handleSubmit((data) => saveCharacter(data))}
               className="space-y-8"
             >
+              <div className="space-y-4">
+                <Label htmlFor="name">Character Name</Label>
+                <Input
+                  id="name"
+                  {...form.register("name")}
+                  className="text-xl"
+                />
+              </div>
               <div className="grid grid-cols-3 gap-6">
-                <div className="space-y-4">
-                  <Label htmlFor="name">Character Name</Label>
-                  <Input
-                    id="name"
-                    {...form.register("name")}
-                    className="text-xl"
-                  />
-                </div>
                 <div className="space-y-4">
                   <Label>Character Rank</Label>
                   <Select
@@ -197,6 +195,7 @@ export default function CharacterSheet() {
                     </SelectContent>
                   </Select>
                 </div>
+
                 <div className="space-y-4">
                   <Label>Character Dice</Label>
                   <Input
@@ -205,6 +204,17 @@ export default function CharacterSheet() {
                     {...form.register("dicevalue")}
                     readOnly
                   />
+                </div>
+                {/* Global Skill Base */}
+                <div className="flex justify-center items-center space-x-2 mt-10">
+                  <Label className="text-[20px]">Soul Cores:</Label>
+                  <Input
+                    className="w-20 text-center text-xl"
+                    min={0}
+                    value={globalSkillBase}
+                    onChange={(e) => setGlobalSkillBase(Number(e.target.value))}
+                  />
+                  <Label className="text-[20px]">Max: 7</Label>
                 </div>
               </div>
 
@@ -304,18 +314,6 @@ export default function CharacterSheet() {
                 </div>
               </div>
 
-              {/* Global Skill Base */}
-              <div className="space-y-4">
-                <Label>Global Skill Base Value</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  value={globalSkillBase}
-                  onChange={(e) => setGlobalSkillBase(Number(e.target.value))}
-                  className="w-32"
-                />
-              </div>
-
               {/* Equipment Section */}
               <div className="space-y-6">
                 <h3 className="text-lg font-semibold">Equipment</h3>
@@ -353,11 +351,7 @@ export default function CharacterSheet() {
                       {...form.register("weaponName")}
                       placeholder="Weapon Name"
                     />
-                    <Input
-                      type="text"
-                      
-                      placeholder="Weapon Damage"
-                    />
+                    <Input type="text" placeholder="Weapon Damage" />
                   </div>
                 </div>
               </div>
@@ -404,18 +398,18 @@ export default function CharacterSheet() {
                       }
                       placeholder="Incoming Damage"
                     />
-                    <Button type="button" onClick={handleDamageCalculation}>
+                    <Button className="w-34" type="button" onClick={handleDamageCalculation}>
                       Calculate Damage
                     </Button>
-                    <div className="space-x-1" >
-                    <Checkbox 
+
+                    <Checkbox
+                      className="ml-4"
                       checked={form.watch("shieldonoff")}
                       onCheckedChange={(checked) =>
                         form.setValue("shieldonoff", !!checked)
                       }
                     ></Checkbox>
-                    <Label >Shield On/Off</Label>
-                   </div>
+                    <Label className="ml-2">Shield On/Off</Label>
                   </div>
                 </div>
               </div>

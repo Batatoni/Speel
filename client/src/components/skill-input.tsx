@@ -33,7 +33,7 @@ export function SkillInput({
       <Label htmlFor={name} className="text-sm">
         {label} ({totalBonus>=0? '+' + totalBonus : totalBonus})
       </Label>
-      <div className="grid grid-cols-12 gap-2">
+      <div className="grid grid-cols-12 gap-1">
        <Select   
         value={proficiencyLevel}
         onValueChange={(value: ProficiencyLevel) => form.setValue(name as any, value)}
