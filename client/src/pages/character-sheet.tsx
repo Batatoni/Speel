@@ -28,6 +28,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { boolean } from "drizzle-orm/pg-core";
 import Input_ from "postcss/lib/input";
+import { Download, Upload } from "lucide-react";
 
 export default function CharacterSheet() {
   const { toast } = useToast();
@@ -149,6 +150,44 @@ export default function CharacterSheet() {
 
     const newHp = Math.max(form.watch("currentHp") - Math.ceil(totalDamage));
     form.setValue("currentHp", newHp);
+  };
+
+  const handleExportCharacter = () => {
+    const characterData = form.getValues();
+    const blob = new Blob([JSON.stringify(characterData, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${characterData.name || form.watch("name")}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+  const handleImportCharacter = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const character = JSON.parse(e.target?.result as string);
+          form.reset(character);
+          toast({
+            title: "Character Imported",
+            description: "Character data has been loaded successfully.",  
+          });
+        } catch (error) {
+          toast({
+            title: "Import Error",
+            description: "Failed to import character data.",
+            variant: "destructive",
+          });
+        }
+      };
+      reader.readAsText(file);
+    }
   };
 
   return (
@@ -413,10 +452,35 @@ export default function CharacterSheet() {
                   </div>
                 </div>
               </div>
-
-              <Button type="submit" disabled={isPending} className="w-full">
-                Save Character
-              </Button>
+              <div className="flex gap-4 mt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleExportCharacter}
+                  className="flex gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  Export Character
+                </Button>
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept=".json"
+                    onChange={handleImportCharacter}
+                    className="hidden"
+                    id="import-character"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById("import-character")?.click()}
+                    className="flex gap-2"
+                  >
+                    <Upload className="w-4 h-4" />
+                    Import Character
+                  </Button>
+                </div>
+              </div>         
             </form>
           </Form>
         </CardContent>

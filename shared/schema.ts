@@ -1,10 +1,10 @@
 import { int } from "drizzle-orm/mysql-core";
 import { pgTable, text, serial, integer, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
+import { any, string, unknown, z } from "zod";
 
 // Define proficiency levels as a string literal type since we're using in-memory storage
-export type ProficiencyLevel = "none" | "trained" | "mastered" | "supreme";
+export type ProficiencyLevel= "none" | "trained" | "mastered" | "supreme";
 
 export const characters = pgTable("characters", {
   id: serial("id").primaryKey(),
