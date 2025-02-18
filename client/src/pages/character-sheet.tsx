@@ -11,7 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AttributeInput } from "@/components/attribute-input";
+import { AttributeInput, CoreChange } from "@/components/attribute-input";
 import { SkillInput } from "@/components/skill-input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -26,8 +26,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { boolean } from "drizzle-orm/pg-core";
-import Input_ from "postcss/lib/input";
 import { Download, Upload } from "lucide-react";
 
 export default function CharacterSheet() {
@@ -43,6 +41,7 @@ export default function CharacterSheet() {
       body: 10,
       mind: 10,
       soul: 10,
+      fragments: 0,
       // Initialize all skills with 'none' level
       strength: "none",
       strengthBase: 0,
@@ -115,7 +114,6 @@ export default function CharacterSheet() {
   });
 
   const watchBody = form.watch("body");
-  const maxHp = 50;
 
   const handleDamageCalculation = () => {
     const armorValue = form.watch("armorValue");
@@ -166,7 +164,9 @@ export default function CharacterSheet() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
-  const handleImportCharacter = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportCharacter = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -176,7 +176,7 @@ export default function CharacterSheet() {
           form.reset(character);
           toast({
             title: "Character Imported",
-            description: "Character data has been loaded successfully.",  
+            description: "Character data has been loaded successfully.",
           });
         } catch (error) {
           toast({
@@ -212,7 +212,7 @@ export default function CharacterSheet() {
                   className="text-xl"
                 />
               </div>
-              <div className="grid grid-cols-3 gap-6">
+              <div className="grid grid-cols-4 gap-6">
                 <div className="space-y-4">
                   <Label>Character Rank</Label>
                   <Select
@@ -244,16 +244,27 @@ export default function CharacterSheet() {
                     readOnly
                   />
                 </div>
-                {/* Global Skill Base */}
-                <div className="flex justify-center items-center space-x-2 mt-10">
-                  <Label className="text-[20px]">Soul Cores:</Label>
+
+                <div className="space-y-4">
+                  <Label>Fragments</Label>
                   <Input
-                    className="w-20 text-center text-xl"
+                  className="text-xl"
+                  min={0}
+                  max={7000}
+                  {...form.register("fragments")}
+                  onChange={(e) => setGlobalSkillBase(Number(CoreChange(Number(e.target.value))))}
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  <Label>Soul Cores</Label>
+                  <Input
+                    className="text-center text-xl"
                     min={0}
+                    max={7}
                     value={globalSkillBase}
                     onChange={(e) => setGlobalSkillBase(Number(e.target.value))}
                   />
-                  <Label className="text-[20px]">Max: 7</Label>
                 </div>
               </div>
 
@@ -405,7 +416,7 @@ export default function CharacterSheet() {
                     value={
                       (form.watch("currentHp") / form.watch("maxHp")) * 100
                     }
-                    className="h-4"
+                    className="h-5"
                   />
                 </div>
                 <div className="grid grid-cols-3 gap-2">
@@ -437,7 +448,11 @@ export default function CharacterSheet() {
                       }
                       placeholder="Incoming Damage"
                     />
-                    <Button className="w-34" type="button" onClick={handleDamageCalculation}>
+                    <Button
+                      className="w-34"
+                      type="button"
+                      onClick={handleDamageCalculation}
+                    >
                       Calculate Damage
                     </Button>
 
@@ -473,29 +488,20 @@ export default function CharacterSheet() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => document.getElementById("import-character")?.click()}
+                    onClick={() =>
+                      document.getElementById("import-character")?.click()
+                    }
                     className="flex gap-2"
                   >
                     <Upload className="w-4 h-4" />
                     Import Character
                   </Button>
                 </div>
-              </div>         
+              </div>
             </form>
           </Form>
         </CardContent>
       </Card>
     </div>
   );
-}
-
-function getProficiencyMultiplier(proficiency: string): number {
-  switch (proficiency) {
-    case "master":
-      return 2;
-    case "expert":
-      return 1.5;
-    default:
-      return 1;
-  }
 }

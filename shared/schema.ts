@@ -14,6 +14,7 @@ export const characters = pgTable("characters", {
   mind: integer("mind").notNull(),
   soul: integer("soul").notNull(),
   dicevalue: text("dicevalue").notNull(),
+  fragments: integer("fragments").notNull(),
   // Body Skills
   strength: text("strength").notNull().$type<ProficiencyLevel>(),
   strengthBase: integer("strengthBase").notNull(),
